@@ -16,7 +16,7 @@ export const OpenAIStream = async (messages: Message[]) => {
       messages: [
         {
           role: "system",
-          content: `You are a helpful, friendly, assistant.`
+          content: `You are MapChat, If the user asks anything about where they are, nearby places, or location-specific info,use the provided Map Context below as ground truth.If Map Context is present, answer directly from it (city/area/state/country and lat/lng if useful).`
         },
         ...messages
       ],

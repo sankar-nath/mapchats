@@ -4,10 +4,12 @@ import { Navbar } from "@/components/Layout/Navbar";
 import { Message } from "@/types";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
+import MapPane from '@/components/MapPane';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [mapContext, setMapContext] = useState<string>(""); // <-- NEW
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -21,13 +23,30 @@ export default function Home() {
     setMessages(updatedMessages);
     setLoading(true);
 
+      // Grab whatever is in the map's textbox
+  const mapInfoEl = document.getElementById("map-info-text") as HTMLTextAreaElement | null;
+  const mapContext = mapInfoEl?.value || "";
+
+   // Build payload with map context
+const payload = mapContext
+  ? [
+      { role: "system", content: `Map context:\n${mapContext}` } as Message,
+      ...updatedMessages
+    ]
+  : updatedMessages;
+
+    // 👇 Log it so you can inspect in browser DevTools
+    console.log("Payload sent to API:", payload);
+
+    console.log("Payload JSON:", JSON.stringify({ messages: payload }, null, 2));
+
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        messages: updatedMessages
+        messages: payload
       })
     });
 
@@ -80,7 +99,7 @@ export default function Home() {
     setMessages([
       {
         role: "assistant",
-        content: `Hi there! I'm Chatbot UI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
+        content: `Hi there! I'm Vidya AI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
       }
     ]);
   };
@@ -101,10 +120,10 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Chatbot UI</title>
+        <title>AI Map Chat</title>
         <meta
           name="description"
-          content="A simple chatbot starter kit for OpenAI's chat model using Next.js, TypeScript, and Tailwind CSS."
+          content="Chat with Maps using AI"
         />
         <meta
           name="viewport"
@@ -119,17 +138,23 @@ export default function Home() {
       <div className="flex flex-col h-screen">
         <Navbar />
 
-        <div className="flex-1 overflow-auto sm:px-10 pb-4 sm:pb-10">
-          <div className="max-w-[800px] mx-auto mt-4 sm:mt-12">
-            <Chat
-              messages={messages}
-              loading={loading}
-              onSend={handleSend}
-              onReset={handleReset}
-            />
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
+      <div className="max-w-[1200px] mx-auto mt-4 sm:mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+  {/* Map */}
+  <MapPane onContextChange={setMapContext} />   {/* <-- pass callback */}
+
+
+
+  {/* Chat */}
+  <div className="flex flex-col">
+    <Chat
+      messages={messages}
+      loading={loading}
+      onSend={handleSend}
+      onReset={handleReset}
+    />
+    <div ref={messagesEndRef} />
+  </div>
+</div>
         <Footer />
       </div>
     </>
