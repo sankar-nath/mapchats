@@ -21,14 +21,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const item = results[0];
     res.status(200).json({
-      lat: parseFloat(item.lat),
-      lon: parseFloat(item.lon),
-      name: item.display_name,
-      type: item.type,          // e.g., 'restaurant', 'neighbourhood'
-      category: item.class,     // e.g., 'amenity', 'place'
-      address: item.address,    // structured address object
-      bbox: item.boundingbox    // [south, north, west, east]
-    });
+  lat: parseFloat(item.lat),
+  lon: parseFloat(item.lon),
+  name: item.display_name,
+  type: item.type,
+  category: item.class,
+  address: item.address,
+  bbox: item.boundingbox,
+  namedetails: item.namedetails,   // multilingual names
+  extratags: item.extratags,       // metadata like website, wikipedia, opening_hours
+  osm_id: item.osm_id,             // unique OSM ID
+  osm_type: item.osm_type,         // node/way/relation
+  importance: item.importance,     // relative importance
+  place_rank: item.place_rank      // rank scale
+});
+
+  console.log("Geocode result:", item);
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Geocode failed" });
   }

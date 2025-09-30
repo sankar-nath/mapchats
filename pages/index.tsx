@@ -14,13 +14,21 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   //30 sep attempting to save chats
-  const [savedChats, setSavedChats] = useState<{id: string, title: string, messages: Message[]}[]>([]);
+  const [savedChats, setSavedChats] = useState<{
+  id: string,
+  title: string,
+  messages: Message[],
+  mapContext: string
+}[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const loadChat = (id: string) => {
   const chat = savedChats.find(c => c.id === id);
-  if (chat) setMessages(chat.messages);
-  };  
+  if (chat) {
+    setMessages(chat.messages);
+    setMapContext(chat.mapContext); // 👈 restore map
+  }
+};
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -37,7 +45,7 @@ export default function Home() {
   const mapContext = mapInfoEl?.value || "";
 
    // Build payload with map context
-const payload = mapContext
+  const payload = mapContext
   ? [
       { role: "system", content: `Map context:\n${mapContext}` } as Message,
       ...updatedMessages
@@ -45,9 +53,9 @@ const payload = mapContext
   : updatedMessages;
 
     // 👇 Log it so you can inspect in browser DevTools
-    console.log("Payload sent to API:", payload);
+    //console.log("Payload sent to API:", payload);
 
-    console.log("Payload JSON:", JSON.stringify({ messages: payload }, null, 2));
+    //console.log("Payload JSON:", JSON.stringify({ messages: payload }, null, 2));
 
     const response = await fetch("/api/chat", {
       method: "POST",
@@ -108,7 +116,7 @@ const payload = mapContext
     setMessages([
       {
         role: "assistant",
-        content: `Hi there! I'm Vidya AI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
+        content: `Reset Done! Hi there! I'm MapChats, an AI assistant that can help you chat with Maps`
       }
     ]);
   };
@@ -121,7 +129,7 @@ const payload = mapContext
     setMessages([
       {
         role: "assistant",
-        content: `Hi there! I'm Chatbot UI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
+        content: `Hi there! I'm MapChats, an AI assistant that can help you chat with Maps`
       }
     ]);
   }, []);
@@ -182,12 +190,15 @@ return (
       <main className="flex-1 min-w-0">
         <div className="flex flex-col lg:flex-row flex-1 mx-auto mt-4 sm:mt-12 gap-6 px-4 sm:px-8">
           {/* Map */}
-          <div className="flex-1">
-            <MapPane onContextChange={setMapContext} />
+          <div className="flex-[2]">
+            <MapPane
+  onContextChange={setMapContext}
+  initialContext={mapContext}
+/>
           </div>
 
           {/* Chat */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex-[1] flex flex-col">
             <Chat
               messages={messages}
               loading={loading}
@@ -195,17 +206,18 @@ return (
               onReset={handleReset}
             />
             <button
-              className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-              onClick={() => {
-                const id = Date.now().toString();
-                setSavedChats([
-                  ...savedChats,
-                  { id, title: `Chat ${savedChats.length + 1}`, messages },
-                ]);
-              }}
-            >
-              Save Chat
-            </button>
+  className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+  onClick={() => {
+    const id = Date.now().toString();
+    const title = mapContext || `Chat ${savedChats.length + 1}`;
+    setSavedChats([
+      ...savedChats,
+      { id, title, messages, mapContext },
+    ]);
+  }}
+>
+  Save Chat
+</button>
             <div ref={messagesEndRef} />
           </div>
         </div>

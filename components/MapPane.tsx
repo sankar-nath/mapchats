@@ -1,8 +1,9 @@
 // components/MapPane.tsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 type MapPaneProps = {
   onContextChange?: (text: string) => void; // callback to send context up
+  initialContext?: string;
 };
 
 /* --- helpers for bbox + zoom forcing (you already had these) --- */
@@ -27,10 +28,16 @@ type GeoInfo = {
   bbox?: [string, string, string, string];
 };
 
-export default function MapPane({ onContextChange }: MapPaneProps) {
+export default function MapPane({ onContextChange, initialContext }: MapPaneProps) {
+  useEffect(() => {
+    if (initialContext) {
+      // TODO: update map iframe / textbox here
+      onContextChange?.(initialContext);
+    }
+  }, [initialContext]);
   const [lat, setLat] = useState(43.7615);
   const [lng, setLng] = useState(-79.4111);
-  const [zoom, setZoom] = useState(12);
+  const [zoom, setZoom] = useState(15);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [info, setInfo] = useState<GeoInfo | null>(null);
@@ -68,9 +75,11 @@ export default function MapPane({ onContextChange }: MapPaneProps) {
       const data = await r.json();
       if (!r.ok) throw new Error(data?.error || "Search failed");
 
+      
+
       setLat(data.lat);
       setLng(data.lon);
-      setZoom(19); // max
+      setZoom(17); 
       setStatus(data.name);
       setInfo({
         name: data.name,

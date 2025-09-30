@@ -1,4 +1,4 @@
-MapChats
+## MapChats
 
 I forked this project from: [Chatbot UI Lite](https://github.com/mckaywrigley/chatbot-ui-lite)
 
