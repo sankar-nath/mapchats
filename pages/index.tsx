@@ -13,6 +13,15 @@ export default function Home() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  //30 sep attempting to save chats
+  const [savedChats, setSavedChats] = useState<{id: string, title: string, messages: Message[]}[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const loadChat = (id: string) => {
+  const chat = savedChats.find(c => c.id === id);
+  if (chat) setMessages(chat.messages);
+  };  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -117,46 +126,91 @@ const payload = mapContext
     ]);
   }, []);
 
-  return (
-    <>
-      <Head>
-        <title>AI Map Chat</title>
-        <meta
-          name="description"
-          content="Chat with Maps using AI"
+return (
+  <>
+    <Head>
+      <title>AI Map Chat 111</title>
+      <meta name="description" content="Chat with Maps using AI" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <link rel="icon" href="/favicon.ico" />
+    </Head>
+
+    <Navbar onOpenSidebar={() => setSidebarOpen(true)} />
+
+    <div className="flex">
+      {/* Mobile overlay when sidebar is open */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 sm:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-        />
-      </Head>
+      )}
 
-      <div className="flex flex-col h-screen">
-        <Navbar />
-
-      <div className="max-w-[1200px] mx-auto mt-4 sm:mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
-  {/* Map */}
-  <MapPane onContextChange={setMapContext} />   {/* <-- pass callback */}
-
-
-
-  {/* Chat */}
-  <div className="flex flex-col">
-    <Chat
-      messages={messages}
-      loading={loading}
-      onSend={handleSend}
-      onReset={handleReset}
-    />
-    <div ref={messagesEndRef} />
-  </div>
-</div>
-        <Footer />
+      {/* Sidebar: pinned on desktop, slides on mobile */}
+      <div
+        className={`
+          fixed top-0 left-0 h-full w-64 bg-white shadow-lg p-4 z-50
+          transform transition-transform duration-300
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          sm:translate-x-0 sm:static sm:block
+        `}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-bold mb-4">Saved Chats</h2>
+        {savedChats.length === 0 ? (
+          <p className="text-sm text-gray-500">No saved chats yet</p>
+        ) : (
+          <ul className="space-y-2">
+            {savedChats.map((chat) => (
+              <li key={chat.id}>
+                <button
+                  className="w-full text-left hover:bg-gray-200 p-2 rounded"
+                  onClick={() => {
+                    loadChat(chat.id);
+                    setSidebarOpen(false);
+                  }}
+                >
+                  {chat.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-    </>
-  );
+
+      {/* Main content */}
+      <main className="flex-1 min-w-0">
+        <div className="flex flex-col lg:flex-row flex-1 mx-auto mt-4 sm:mt-12 gap-6 px-4 sm:px-8">
+          {/* Map */}
+          <div className="flex-1">
+            <MapPane onContextChange={setMapContext} />
+          </div>
+
+          {/* Chat */}
+          <div className="flex-1 flex flex-col">
+            <Chat
+              messages={messages}
+              loading={loading}
+              onSend={handleSend}
+              onReset={handleReset}
+            />
+            <button
+              className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              onClick={() => {
+                const id = Date.now().toString();
+                setSavedChats([
+                  ...savedChats,
+                  { id, title: `Chat ${savedChats.length + 1}`, messages },
+                ]);
+              }}
+            >
+              Save Chat
+            </button>
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+      </main>
+    </div>
+  </>
+);
 }

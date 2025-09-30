@@ -103,77 +103,87 @@ export default function MapPane({ onContextChange }: MapPaneProps) {
     return parts.filter(Boolean).join("\n");
   })();
 
-  return (
-    <div className="relative w-full rounded-xl border overflow-hidden bg-slate-50">
-      {/* Map */}
-      <div className="relative w-full h-[420px]">
-        {/* When locked, intercept all pointer/wheel/keyboard events */}
-        {locked && (
-          <div
-            className="absolute inset-0 z-20 cursor-not-allowed"
-            style={{ background: "transparent", pointerEvents: "auto" }}
-            aria-label="Map locked overlay"
-            title="Map is locked"
-          />
-        )}
-
-        <iframe
-          key={src}
-          title="Map"
-          src={src}
-          className="w-full h-full"
-          style={{ border: 0 }}
-          loading="eager"
-          referrerPolicy="no-referrer-when-downgrade"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+return (
+  <div className="flex flex-col rounded-xl border overflow-hidden bg-slate-50">
+    {/* Map */}
+    <div className="relative w-full h-full">
+      {/* When locked, intercept all pointer/wheel/keyboard events */}
+      {locked && (
+        <div
+          className="absolute inset-0 z-20 cursor-not-allowed"
+          style={{ background: "transparent", pointerEvents: "auto" }}
+          aria-label="Map locked overlay"
+          title="Map is locked"
         />
-
-        {/* Lock toggle button (top-right) */}
-        <button
-          type="button"
-          onClick={() => setLocked(v => !v)}
-          aria-pressed={locked}
-          className={`absolute right-3 top-3 z-30 px-3 py-1.5 rounded-lg shadow border text-sm
-            ${locked ? "bg-gray-900 text-white" : "bg-white/95"}`}
-          title={locked ? "Unlock map" : "Lock map"}
-        >
-          {locked ? "🔒 Locked" : "🔓 Unlock"}
-        </button>
-
-        {/* Search box overlay (top-right, next to lock) */}
-        <form
-          onSubmit={onSearch}
-          className="absolute right-[112px] top-3 z-30 flex items-center gap-2 bg-white/95 backdrop-blur px-3 py-2 rounded-lg shadow"
-        >
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search a place"
-            className="outline-none text-sm w-48 sm:w-64"
-            disabled={locked}
-          />
-          <button
-            type="submit"
-            disabled={locked}
-            className={`text-sm px-3 py-1.5 rounded-md border ${locked ? "opacity-60 cursor-not-allowed" : "hover:bg-gray-50"}`}
-          >
-            Search
-          </button>
-        </form>
-      </div>
-
-      {/* Status toast */}
-      {status && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-3 bg-white/95 px-3 py-1.5 rounded-md text-xs shadow z-30">
-          {status}
-        </div>
       )}
 
-      {/* Info textbox */}
-      <div className="p-3 border-t bg-white">
-        <label className="block text-xs font-medium text-gray-500 mb-1">Search result</label>
-        <textarea id="map-info-text" readOnly value={infoText} rows={3} className="w-full text-sm rounded-lg border p-2 resize-y" />
-      </div>
+      <iframe
+        key={src}
+        title="Map"
+        src={src}
+        className="w-full min-h-64"
+        style={{ border: 0 }}
+        loading="eager"
+        referrerPolicy="no-referrer-when-downgrade"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+      />
     </div>
-  );
+
+    {/* Controls: Lock + Search */}
+    <div className="flex items-center gap-3 p-3 border-t bg-white">
+      <button
+        type="button"
+        onClick={() => setLocked(v => !v)}
+        aria-pressed={locked}
+        className={`px-3 py-1.5 rounded-lg shadow border text-sm ${
+          locked ? "bg-gray-900 text-white" : "bg-white hover:bg-gray-50"
+        }`}
+        title={locked ? "Unlock map" : "Lock map"}
+      >
+        {locked ? "🔒 Locked" : "🔓 Unlock"}
+      </button>
+
+      <form onSubmit={onSearch} className="flex items-center gap-2 flex-1">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search a place"
+          className="outline-none text-sm w-full rounded-md border px-2 py-1"
+          disabled={locked}
+        />
+        <button
+          type="submit"
+          disabled={locked}
+          className={`text-sm px-3 py-1.5 rounded-md border ${
+            locked ? "opacity-60 cursor-not-allowed" : "hover:bg-gray-50"
+          }`}
+        >
+          Search
+        </button>
+      </form>
+    </div>
+
+    {/* Status toast */}
+    {status && (
+      <div className="flex flex-col">
+        {status}
+      </div>
+    )}
+
+    {/* Info textbox */}
+    <div className="p-3 border-t bg-white">
+      <label className="block text-xs font-medium text-gray-500 mb-1">
+        Search result
+      </label>
+      <textarea
+        id="map-info-text"
+        readOnly
+        value={infoText}
+        rows={3}
+        className="w-full h-full text-sm rounded-lg border p-2 resize-y"
+      />
+    </div>
+  </div>
+);
+
 }
